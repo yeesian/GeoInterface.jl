@@ -172,7 +172,9 @@ for (geomtype, trait, childtype, child_trait, length_check, nesting) in (
         # But not if geom is already a WrapperGeometry
         convert(::Type{$geomtype}, ::$trait, geom::$geomtype) = geom
         
-        function Base.show(io::IO, ::MIME"text/plain", geom::$geomtype{Z, M, T, E, C}; show_mz::Bool = true, screen_ncols::Int = displaysize(io)[2]) where {Z, M, T, E <: Union{Nothing,Extents.Extent}, C}
+        function Base.show(io::IO, ::MIME"text/plain", geom::$geomtype{Z, M, T, E, C}; 
+            show_mz::Bool = true, screen_ncols::Int = displaysize(io)[2]
+        ) where {Z, M, T, E <: Union{Nothing,Extents.Extent}, C}
             compact = get(io, :compact, false)
             spacing = compact ? "" : " "
             show_mz &= !compact
@@ -188,7 +190,7 @@ for (geomtype, trait, childtype, child_trait, length_check, nesting) in (
                 end
             end
 
-            str = "$($geomtype)"
+            str = string($geomtype)
             if show_mz
                 str *= "{$Z,$(spacing)$M}"
             end
@@ -234,7 +236,7 @@ for (geomtype, trait, childtype, child_trait, length_check, nesting) in (
                 
                 str *= "]"
             else
-                str *= _nice_geom_str(g, false, compact, screen_ncols - currently_used_space)
+                str *= _nice_geom_str(parent(geom), false, compact, screen_ncols - currently_used_space)
             end
 
             str *= extent_str
@@ -652,9 +654,9 @@ _child_feature_error() = throw(ArgumentError("child objects must be features"))
 isfeaturecollection(fc::Type{<:FeatureCollection}) = true
 trait(fc::FeatureCollection) = FeatureCollectionTrait()
 
-nfeature(::FeatureCollectionTrait, fc::FeatureCollection) =
+nfeature(t::FeatureCollectionTrait, fc::FeatureCollection) =
     _parent_is_fc(fc) ? nfeature(t, parent(fc)) : length(parent(fc))
-getfeature(::FeatureCollectionTrait, fc::FeatureCollection) =
+getfeature(t::FeatureCollectionTrait, fc::FeatureCollection) =
     _parent_is_fc(fc) ? getfeature(t, parent(fc)) : parent(fc)
 getfeature(t::FeatureCollectionTrait, fc::FeatureCollection, i::Integer) =
     _parent_is_fc(fc) ? getfeature(t, parent(fc), i) : parent(fc)[i]
